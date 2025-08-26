@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Lust</title>
+<style>
+  body {background:#0d0d0d;color:#fff;font-family:'Segoe UI',sans-serif;margin:0;padding:0;}
+  nav {display:flex;justify-content:space-between;align-items:center;background:#111;padding:10px 20px;position:sticky;top:0;z-index:100;}
+  nav .logo {font-size:1.8em;font-weight:bold;color:#ff1a1a;text-shadow:0 0 10px #ff1a1a;cursor:pointer;}
+  nav ul {list-style:none;display:flex;gap:15px;margin:0;padding:0;align-items:center;}
+  nav ul li {position:relative;}
+  nav ul li a {text-decoration:none;color:#fff;padding:6px 10px;border-radius:4px;transition:0.3s;cursor:pointer;}
+  nav ul li a:hover, nav ul li a.active {background:#ff4d4d;color:#000;}
+  .search-box input {padding:6px 10px;border-radius:6px;border:none;outline:none;background:#222;color:#fff;width:180px;}
+  .gallery {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;padding:20px;}
+  .movie-card {background:#1a1a1a;border-radius:10px;overflow:hidden;box-shadow:0 0 10px rgba(255,0,0,0.5);position:relative;transition:0.3s;}
+  .movie-card:hover {transform: scale(1.03);box-shadow:0 0 20px #ff1a1a;}
+  .movie-card img {width:100%;display:block;}
+  .duration-label {position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;font-size:0.8em;padding:3px 6px;border-radius:4px;}
+  .movie-info {padding:10px;}
+  .movie-info h3 {font-size:1.1em;margin:5px 0;color:#ff1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .movie-info .desc {font-size:0.85em;color:#bbb;margin:3px 0;}
+  .movie-info button {width:100%;padding:8px;background:#ff4d4d;color:#000;border:none;border-radius:6px;cursor:pointer;font-weight:bold;margin-top:5px;transition:0.3s;}
+  .movie-info button:hover {background:#ff1a1a;}
+  .category-list {display:grid;grid-template-columns:repeat(5,1fr);gap:15px;padding:10px 20px;}
+  .category-card {background:#222;border-radius:8px;text-align:center;cursor:pointer;padding:5px;transition:0.3s;}
+  .category-card:hover {background:#ff1a1a;color:#000;transform:scale(1.05);}
+  .category-card img {width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:5px;}
+  .small-categories {display:flex;flex-wrap:wrap;gap:5px;padding:10px 20px;}
+  .small-categories span {font-size:0.65em;background:#222;padding:3px 6px;border-radius:4px;cursor:pointer;}
+  .small-categories span:hover {background:#ff1a1a;color:#000;}
+  .alpha-filter {margin:10px 20px;}
+  .alpha-filter span {margin:0 3px;padding:3px 6px;background:#222;border-radius:4px;cursor:pointer;font-size:0.75em;}
+  .alpha-filter span.active {background:#ff4d4d;color:#000;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="goHome()">Red Lust</div>
+  <ul>
+    <li><a href="#" class="active" id="homeBtn">Home</a></li>
+    <li><a href="#" id="categoriesBtn">Categories</a></li>
+    <li><a href="#" id="randomBtn">Random Video</a></li>
+  </ul>
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search videos or categories...">
+  </div>
+</nav>
+
+<div id="mainContent">
+  <div class="gallery" id="gallery"></div>
+  <div class="pagination" id="pagination"></div>
+
+  <!-- Category Page -->
+  <div id="categoryPage" style="display:none;">
+    <div class="category-list" id="topCategories"></div>
+    <div class="alpha-filter" id="alphaFilter"></div>
+    <div class="small-categories" id="allCategories"></div>
+  </div>
+</div>
+
+<script>   
+// ===== VIDEO DATA =====
+const videos=[
+ {title:"Accidentally let my cousin find me having sex with mom", thumbnail:"https://c2.ttcache.com/thumbnail/VRWtNdSIgSj/288x162/1.jpg", category:["MILF","Threesome","Step","Sex","Mom","Big Boobs","Stepmom","Stepson"], duration:"35:30", source:"Love4Porn",
+link:"https://love4porn.com/videos/610695/accidentally-let-my-cousin-find-me-having/?utm_source=pbw&utm_campaign=plugs&asgtbndr=1&play=true&spon=strip&zone=love4porn"},
+ 
+  {title:"Step-Mom's Creampie Surprise - Stepson Fucks Mom In Kitchen", thumbnail:"https://c3.ttcache.com/thumbnail/063sexROJrw/288x162/1.jpg", category:["MILF","Amateur","Big Tits","Wife","Mom","creamy","Stepmom","Stepson"], duration:"25:35", source:"Love4Porn", 
+link:"https://love4porn.com/videos/1105072/stepmoms-creamy-dessert/?utm_source=pbw&utm_campaign=plugs&asgtbndr=1&play=true&spon=strip&zone=love4porn"},
+
+  {title:"I Accidentally Kissed My Busty Stepmom", thumbnail:"https://c4.ttcache.com/thumbnail/VQqD7tBXnXl/288x162/2.jpg", category:"action", duration:"37:12", source:"4kporn", 
+link:"https://4kporn.xxx/videos/988758/i-accidentally-kissed-my-busty-stepmom/?utm_source=pbw&utm_campaign=plugs&asgtbndr=1&play=true&spon=strip&zone=4kporn"},
+
+  {title:"I Fucked Mom's Best Friend so Hard She Forgot Her Name", thumbnail:"https://c4.ttcache.com/thumbnail/MSMxwRtvY3B/288x162/hq.4.webp", category:"drama", duration:"19:33", source:"xhamster", 
+link:"https://xhamster.desi/videos/i-fucked-moms-best-friend-so-hard-she-forgot-her-name-xh0K1wX?pw="},
+
+  {title:"Take Care Step Mother Jennifer", thumbnail:"https://c1.ttcache.com/thumbnail/z99EfBRu0n6/288x162/5.jpg", category:"action", duration:"33:39", source:"deviants", 
+link:"https://www.deviants.com/videos/104810/take-care-step-mother-jennifer/?utm_source=PBWeb&utm_medium=PBWeb&sub=100001&asgtbndr=1"},
+
+  {title:"Stepmom i know you cheating with someone", thumbnail:"https://c2.ttcache.com/thumbnail/1qgplsibIDy/288x162/4.jpg", category:"young", duration:"39:12", source:"4kporn", 
+link:"https://4kporn.xxx/videos/1104885/stepmom-i-know-you-cheating-with-someone/?utm_source=pbw&utm_campaign=plugs&asgtbndr=1&play=true&spon=strip&zone=4kporn"},
+
+  {title:"Stepmother and her stepson share a hotel bed", thumbnail:"https://c4.ttcache.com/thumbnail/6PS5cLSKNQd/288x162/hq.23.webp", category:"milf", duration:"23:27", source:"xhamster", 
+link:"https://xhamster.desi/videos/stepmother-and-her-stepson-share-a-hotel-bed-xhcws0q?pw="},
+
+  {title:"On Vacation With My Very Busty StepMom - Coco Vandi", thumbnail:"https://c2.ttcache.com/thumbnail/6W7MRsv3bua/288x162/12.jpg", category:"young", duration:"39:15", source:"xozilla", 
+link:"https://www.xozilla.xxx/videos/358269/on-vacation-with-my-very-busty-stepmom-coco-vandi/?asgtbndr=1"},
+
+  {title:"Stepmom The Beach Body", thumbnail:"https://c1.ttcache.com/thumbnail/JHrVGle8CZw/288x162/1.jpg", category:"milf", duration:"28:55", source:"3movs", 
+link:"https://www.3movs.com/videos/432539/stepmom-the-beach-body/?site_id=00192"},
+
+  {title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+
+{title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+
+{title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+
+{title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+
+{title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+
+{title:"Date Night With Step Mom Misspanthera MomComesFirst ", thumbnail:"https://c4.ttcache.com/thumbnail/3iGnT2hZDqO/288x162/1.jpg", category:"action", duration:"34:40", source:"powRZ", 
+link:"https://povrz.com/video/469821/date-night-with-step-mom-misspanthera-momcomesfirst/?utm_campaign=tf&asgtbndr=1"},
+];
+
+
+const categories = [
+  { name: "Japanese", thumbnail: "https://c3.ttcache.com/thumbnail/1vmKy6bxrOm/288x162/12_240.jpg" },
+  { name: "Perfect body", thumbnail: "https://c2.ttcache.com/thumbnail/3EipzXvFyCI/288x162/13.jpg" },
+  { name: "Hot Mom", thumbnail: "https://c1.ttcache.com/thumbnail/IA3ebPC7D7P/288x162/poster_01.jpg" },
+  { name: "Asian", thumbnail: "https://c4.ttcache.com/thumbnail/S68WO9kxaOs/288x162/13_240.jpg" },
+  { name: "Russian beauty", thumbnail: "https://c4.ttcache.com/thumbnail/sbUGaR96FTb/288x162/2-5VC.jpg" },
+  { name: "Mom", thumbnail: "https://c1.ttcache.com/thumbnail/3o7QY5GZblq/288x162/previewlg_28573307.jpg" },
+  { name: "Pow", thumbnail: "https://c4.ttcache.com/thumbnail/gbMvoJL6l5Z/288x162/15_240.jpg" },
+  { name: "Big Tits", thumbnail: "https://c1.ttcache.com/thumbnail/S41SvbR2BD9/288x162/14_240.jpg" },
+  { name: "sneaky", thumbnail: "https://c1.ttcache.com/thumbnail/l1SDeKqSkfP/288x162/1.jpg" },
+  { name: "oops", thumbnail: "https://c2.ttcache.com/thumbnail/Gk4LQyIsRlw/288x162/3.jpg" },
+
+
+
+
+
+  // Add as many as you like
+];
+
+// ===== HOME PAGE & PAGINATION =====
+let currentPage = 1;
+const videosPerPage = 90;
+
+function renderVideos(page=1, filter="All", search=""){
+  currentPage = page;
+  document.getElementById("gallery").innerHTML = "";
+  const filtered = videos.filter(v=>{
+    const matchCategory = filter==="All" || v.category===filter;
+    const matchSearch = v.title.toLowerCase().includes(search.toLowerCase()) || v.category.toLowerCase().includes(search.toLowerCase());
+    return matchCategory && matchSearch;
+  });
+  const start = (page-1)*videosPerPage;
+  const pagedVideos = filtered.slice(start,start+videosPerPage);
+  const gallery = document.getElementById("gallery");
+  pagedVideos.forEach(v=>{
+    const card=document.createElement("div");
+    card.className="movie-card";
+    const img=document.createElement("img"); img.src=v.thumbnail;
+    card.appendChild(img);
+    const dur=document.createElement("div"); dur.className="duration-label"; dur.textContent=v.duration;
+    card.appendChild(dur);
+    const info=document.createElement("div"); info.className="movie-info";
+    info.innerHTML=`<h3>${v.title}</h3><div class="desc">${v.source}</div>`;
+    const btn=document.createElement("button"); btn.textContent="Watch Now"; btn.onclick=()=>window.open(v.link,"_blank");
+    info.appendChild(btn);
+    card.appendChild(info);
+    gallery.appendChild(card);
+  });
+  document.getElementById("gallery").style.display="grid";
+  document.getElementById("pagination").style.display="block";
+}
+
+// ===== CATEGORY PAGE =====
+function showCategoryPage(){
+  document.getElementById("gallery").style.display="none";
+  document.getElementById("pagination").style.display="none";
+  document.getElementById("categoryPage").style.display="block";
+  renderCategories();
+}
+
+function renderCategories(){
+  const topDiv = document.getElementById("topCategories");
+  const smallDiv = document.getElementById("allCategories");
+  const alphaDiv = document.getElementById("alphaFilter");
+  topDiv.innerHTML = ""; smallDiv.innerHTML = ""; alphaDiv.innerHTML = "";
+
+  categories.slice(0,40).forEach(cat=>{
+    const div = document.createElement("div"); div.className="category-card";
+    const img = document.createElement("img"); img.src=cat.thumbnail;
+    div.appendChild(img);
+    const name = document.createElement("div"); name.textContent=cat.name; div.appendChild(name);
+    div.onclick = ()=>openCategoryVideos(cat.name);
+    topDiv.appendChild(div);
+  });
+
+  for(let c='A'.charCodeAt(0); c<='Z'.charCodeAt(0); c++){
+    const span = document.createElement("span");
+    span.textContent = String.fromCharCode(c);
+    span.onclick = ()=>{
+      document.querySelectorAll("#alphaFilter span").forEach(s=>s.classList.remove("active"));
+      span.classList.add("active");
+      filterAlpha(span.textContent);
+    };
+    alphaDiv.appendChild(span);
+  }
+
+  categories.slice(40).forEach(cat=>{
+    const span = document.createElement("span");
+    span.textContent = cat.name;
+    span.onclick = ()=>openCategoryVideos(cat.name);
+    smallDiv.appendChild(span);
+  });
+}
+
+function filterAlpha(letter){
+  document.getElementById("allCategories").querySelectorAll("span").forEach(s=>{
+    s.style.display = s.textContent.startsWith(letter) ? "inline-block":"none";
+  });
+}
+
+function openCategoryVideos(catName){
+  document.getElementById("categoryPage").style.display="none";
+  document.getElementById("gallery").style.display="grid";
+  document.getElementById("pagination").style.display="block";
+  document.getElementById("searchInput").value = "";
+  renderVideos(1, catName);
+}
+
+// ===== EVENTS =====
+document.getElementById("homeBtn").addEventListener("click",()=>{
+  document.getElementById("categoryPage").style.display="none";
+  renderVideos();
+});
+document.getElementById("categoriesBtn").addEventListener("click", showCategoryPage);
+document.getElementById("randomBtn").addEventListener("click", ()=>{
+  const rand = videos[Math.floor(Math.random()*videos.length)];
+  window.open(rand.link,"_blank");
+});
+document.getElementById("searchInput").addEventListener("input", ()=>{
+  renderVideos(1, "All", document.getElementById("searchInput").value);
+});
+
+// ===== INIT =====
+renderVideos();
+</script>
+</body>
+</html>
